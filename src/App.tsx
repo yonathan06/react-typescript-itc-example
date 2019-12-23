@@ -1,23 +1,34 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useEffect } from 'react';
 import './App.css';
+import { getTweets, Tweet } from './lib/api';
+import TweetCard from './components/TweetCard';
 
 const App: React.FC = () => {
+  const [tweets, setTweets] = useState([] as Tweet[]);
+  const updateTweets = () => {
+    getTweets().then(data => {
+      const sortedTweets = data.tweets
+        .sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+      setTweets(sortedTweets);
+    })
+  }
+  useEffect(() => {
+    updateTweets();
+    const interval = setInterval(() => {
+      updateTweets();
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [])
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <ul>
+          {tweets.map(tweet =>
+            <TweetCard key={tweet.date} tweet={tweet} />
+          )}
+        </ul>
       </header>
     </div>
   );
